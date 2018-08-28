@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+}
+
+group 'org.gridgain.cache.store.factories'
+version '1.0.0'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+def igniteVersion = '2.6.0'
+
+dependencies {
+    compile group: 'org.apache.ignite', name: 'ignite-core', version: igniteVersion
+
+    runtime group: 'org.apache.ignite', name: 'ignite-spring', version: igniteVersion
+    runtime group: 'org.apache.ignite', name: 'ignite-rest-http', version: igniteVersion
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    testCompile group: 'com.h2database', name: 'h2', version: '1.4.195'
+}

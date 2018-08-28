@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (C) GridGain Systems. All Rights Reserved.
+    _________        _____ __________________        _____
+    __  ____/___________(_)______  /__  ____/______ ____(_)_______
+    _  / __  __  ___/__  / _  __  / _  / __  _  __ `/__  / __  __ \
+    / /_/ /  _  /    _  /  / /_/ /  / /_/ /  / /_/ / _  /  _  / / /
+    \____/   /_/     /_/   \_,__/   \____/   \__,_/  /_/   /_/ /_/
+-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util.xsd">
+    <bean id="ignite.cfg" class="org.apache.ignite.configuration.IgniteConfiguration">
+        <property name="igniteInstanceName" value="client"/>
+        <property name="clientMode" value="true"/>
+
+        <property name="cacheConfiguration">
+            <list>
+                <bean class="org.apache.ignite.configuration.CacheConfiguration">
+                    <property name="name" value="person"/>
+                    <property name="cacheMode" value="PARTITIONED"/>
+                    <property name="atomicityMode" value="ATOMIC"/>
+
+                    <property name="cacheStoreFactory">
+                        <bean class="org.gridgain.cache.store.factories.JdbcCacheStoreFactory">
+                            <property name="url" value="jdbc:h2:tcp://localhost:19092/./out/test"/>
+                            <property name="properties">
+                                <util:map>
+                                    <entry key="user" value="sa"/>
+                                    <entry key="password" value=""/>
+                                </util:map>
+                            </property>
+                            <property name="dialect">
+                                <bean class="org.apache.ignite.cache.store.jdbc.dialect.H2Dialect"/>
+                            </property>
+
+                            <property name="types">
+                                <list>
+                                    <bean class="org.apache.ignite.cache.store.jdbc.JdbcType">
+                                        <property name="cacheName" value="person"/>
+                                        <property name="keyType" value="java.lang.Integer"/>
+                                        <property name="valueType"
+                                                  value="org.gridgain.cache.store.factories.system.Person"/>
+                                        <property name="databaseSchema" value=""/>
+                                        <property name="databaseTable" value="person"/>
+
+                                        <property name="keyFields">
+                                            <list>
+                                                <bean class="org.apache.ignite.cache.store.jdbc.JdbcTypeField">
+                                                    <constructor-arg>
+                                                        <util:constant static-field="java.sql.Types.INTEGER"/>
+                                                    </constructor-arg>
+                                                    <constructor-arg value="id"/>
+                                                    <constructor-arg value="int"/>
+                                                    <constructor-arg value="id"/>
+                                                </bean>
+                                            </list>
+                                        </property>
+
+                                        <property name="valueFields">
+                                            <list>
+                                                <bean class="org.apache.ignite.cache.store.jdbc.JdbcTypeField">
+                                                    <constructor-arg>
+                                                        <util:constant static-field="java.sql.Types.INTEGER"/>
+                                                    </constructor-arg>
+                                                    <constructor-arg value="id"/>
+                                                    <constructor-arg value="int"/>
+                                                    <constructor-arg value="id"/>
+                                                </bean>
+
+                                                <bean class="org.apache.ignite.cache.store.jdbc.JdbcTypeField">
+                                                    <constructor-arg>
+                                                        <util:constant static-field="java.sql.Types.VARCHAR"/>
+                                                    </constructor-arg>
+                                                    <constructor-arg value="name"/>
+                                                    <constructor-arg value="java.lang.String"/>
+                                                    <constructor-arg value="name"/>
+                                                </bean>
+                                            </list>
+                                        </property>
+                                    </bean>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+
+                    <property name="readThrough" value="true"/>
+                    <property name="writeThrough" value="true"/>
+                </bean>
+            </list>
+        </property>
+
+        <property name="discoverySpi">
+            <bean class="org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi">
+                <property name="ipFinder">
+                    <bean class="org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder">
+                        <property name="addresses">
+                            <list>
+                                <value>127.0.0.1:47500..47503</value>
+                            </list>
+                        </property>
+                    </bean>
+                </property>
+            </bean>
+        </property>
+    </bean>
+</beans>
