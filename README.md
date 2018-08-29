@@ -130,6 +130,7 @@ demo proving that the JdbcCacheStoreFactory can be configured on the client side
 ## INSTALLATION
 
 1. Clone the repository
-2. In build.gradle set "igniteVersion" or "gridgainVersion" to match the Ignite or GridGain version you use.
-3. Build the project. By 
+2. In build.gradle set `igniteVersion` or `gridgainVersion` to match the Ignite or GridGain version you use.
+3. Build the project. By default it builds for Ignite. Add `-PbuildProfile=gridgain` to the gradle command line to build 
+   the project for GridGain.
 4. Deploy the project JAR to all server nodes and add it as a runtime Maven dependency to your client application. 
