@@ -2,7 +2,7 @@
 
 Fully serializable Ignite CacheStore factories to allow complete cache store configuration on the client side.
 
-## Motivation
+## MOTIVATION
 
 It is often recommended to split Ignite configuration into server-side configuration and multiple client-side 
 configurations corresponding to specific client applications. Server side configuration defines cluster-wide
@@ -44,7 +44,10 @@ org.gridgain.cache.store.factories.JdbcCacheStoreFactory extends org.apache.igni
 Thus, the factories configuration are the same except that the JdbcCacheStoreFactory does not allow configuring data source
 requiring to configure connection URL and properties instead.
 
-## EXAMPLE CONFIGURATION
+## EXAMPLE
+
+The below configuration is a part of org.gridgain.cache.store.factories.system#clientSideJdbcCacheStoreConfiguration
+demo proving that the JdbcCacheStoreFactory can be configured on the client side only.
 
 ```xml
 <property name="cacheConfiguration">
@@ -127,6 +130,6 @@ requiring to configure connection URL and properties instead.
 ## INSTALLATION
 
 1. Clone the repository
-2. In build.gradle set "igniteVersion" to match the Ignite version you use.
-3. Build the project
+2. In build.gradle set "igniteVersion" or "gridgainVersion" to match the Ignite or GridGain version you use.
+3. Build the project. By 
 4. Deploy the project JAR to all server nodes and add it as a runtime Maven dependency to your client application. 
