@@ -130,6 +130,18 @@ demo proving that the `JdbcDataSourceFactory` can be configured on the client si
 </bean>
 ``` 
 
+To avoid filling database connection properties map, the `JdbcDataSourceFactory` exposes properties `username`,
+`password`, `catalog`, `schema` and `loginTimeout` directly. For example, the `JdbcDataSourceFactory` from the 
+previous example could be alternatively configured as:
+
+```xml
+<bean class="org.gridgain.cache.store.factories.JdbcDataSourceFactory">
+    <property name="url" value="jdbc:h2:tcp://localhost:19092/./out/test"/>
+    <property name="username" value="sa"/>
+    <property name="password" value=""/>
+</bean>
+```
+
 ## INSTALLATION
 
 1. Clone the repository
