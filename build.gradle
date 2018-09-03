@@ -33,5 +33,6 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile group: 'com.h2database', name: 'h2', version: '1.4.195'
 
+    testRuntime group: 'mysql', name: 'mysql-connector-java', version: '8.0.12'
     testRuntime group: 'org.apache.ignite', name: 'ignite-spring', version: igniteVersion
 }

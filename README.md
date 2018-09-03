@@ -1,6 +1,6 @@
 # Serializable Ignite CacheStore Factories
 
-Fully serializable Ignite CacheStore factories to allow complete cache store configuration on the client side.
+Fully serializable Ignite Cache Store factories to allow complete cache store configuration on the client side.
 
 ## MOTIVATION
 
@@ -29,36 +29,39 @@ cannot be configured on the client side.
 
 ## SOLUTION
 
-The reason why org.apache.ignite.cache.store.jdbc.CacheJdbcPojoStoreFactory requires data source configuration is that 
-the factory uses [DataSource](https://docs.oracle.com/javase/9/docs/api/javax/sql/DataSource.html) to create 
+The reason why `CacheJdbcPojoStoreFactory` requires data source configuration is that the factory uses 
+[DataSource](https://docs.oracle.com/javase/9/docs/api/javax/sql/DataSource.html) to create 
 [Connection](https://docs.oracle.com/javase/9/docs/api/java/sql/Connection.html).
 
-JDBC has another standard mechanism to create a Connection, which is using [DriverManager#getConnection](https://docs.oracle.com/javase/7/docs/api/java/sql/DriverManager.html#getConnection(java.lang.String,%20java.util.Properties))
+JDBC has another standard mechanism to create a Connection, which is a
+[DriverManager#getConnection](https://docs.oracle.com/javase/7/docs/api/java/sql/DriverManager.html#getConnection(java.lang.String,%20java.util.Properties))
 method. The method accepts a mandatory database connection URL and optional connection properties.
 
-The new org.gridgain.cache.store.factories.JdbcCacheStoreFactory and org.gridgain.cache.store.factories.JdbcCacheStore 
-from this repository use DriverManager#getConnection() to create connections. Both the URL and properties map are 
-serializable, which allows fully configuring org.gridgain.cache.store.factories.JdbcCacheStoreFactory on the client side.
+Also, `CacheJdbcPojoStoreFactory` has a serializable property `dataSourceFactory` to configure a 
+[Factory<DataSource>](https://static.javadoc.io/javax.cache/cache-api/1.0.0/javax/cache/configuration/Factory.html) 
+instead of the non-serializable `DataSource`.
 
-org.gridgain.cache.store.factories.JdbcCacheStoreFactory extends org.apache.ignite.cache.store.jdbc.CacheJdbcPojoStoreFactory.
-Thus, the factories configuration are the same except that the JdbcCacheStoreFactory does not allow configuring data source
-requiring to configure connection URL and properties instead.
+The solution is new `org.gridgain.cache.store.factories.JdbcDataSourceFactory` and 
+`org.gridgain.cache.store.factories.JdbcDataSource` from this repository. The `JdbcDataSource` uses 
+`DriverManager#getConnection()` to create connections and the `JdbcDataSourceFactory` creates `JdbcDataSource` using 
+the URL and properties specified in the configuration. Both the URL and the properties map are serializable, which 
+allows fully configuring `JdbcDataSourceFactory` on the client side.
 
 ## EXAMPLE
 
-The below configuration is a part of org.gridgain.cache.store.factories.system#clientSideJdbcCacheStoreConfiguration
-demo proving that the JdbcCacheStoreFactory can be configured on the client side only.
+The below configuration is a part of `org.gridgain.cache.store.factories.system#clientSideH2JdbcCacheStoreConfiguration`
+demo proving that the `JdbcDataSourceFactory` can be configured on the client side only.
 
 ```xml
-<property name="cacheConfiguration">
-    <list>
-        <bean class="org.apache.ignite.configuration.CacheConfiguration">
-            <property name="name" value="person"/>
-            <property name="cacheMode" value="PARTITIONED"/>
-            <property name="atomicityMode" value="ATOMIC"/>
+<bean class="org.apache.ignite.configuration.CacheConfiguration">
+    <property name="name" value="person"/>
+    <property name="cacheMode" value="PARTITIONED"/>
+    <property name="atomicityMode" value="ATOMIC"/>
 
-            <property name="cacheStoreFactory">
-                <bean class="org.gridgain.cache.store.factories.JdbcCacheStoreFactory">
+    <property name="cacheStoreFactory">
+        <bean class="org.apache.ignite.cache.store.jdbc.CacheJdbcPojoStoreFactory">
+            <property name="dataSourceFactory">
+                <bean class="org.gridgain.cache.store.factories.JdbcDataSourceFactory">
                     <property name="url" value="jdbc:h2:tcp://localhost:19092/./out/test"/>
                     <property name="properties">
                         <util:map>
@@ -66,65 +69,65 @@ demo proving that the JdbcCacheStoreFactory can be configured on the client side
                             <entry key="password" value=""/>
                         </util:map>
                     </property>
-                    <property name="dialect">
-                        <bean class="org.apache.ignite.cache.store.jdbc.dialect.H2Dialect"/>
-                    </property>
-
-                    <property name="types">
-                        <list>
-                            <bean class="org.apache.ignite.cache.store.jdbc.JdbcType">
-                                <property name="cacheName" value="person"/>
-                                <property name="keyType" value="java.lang.Integer"/>
-                                <property name="valueType"
-                                          value="org.gridgain.cache.store.factories.system.Person"/>
-                                <property name="databaseSchema" value=""/>
-                                <property name="databaseTable" value="person"/>
-
-                                <property name="keyFields">
-                                    <list>
-                                        <bean class="org.apache.ignite.cache.store.jdbc.JdbcTypeField">
-                                            <constructor-arg>
-                                                <util:constant static-field="java.sql.Types.INTEGER"/>
-                                            </constructor-arg>
-                                            <constructor-arg value="id"/>
-                                            <constructor-arg value="int"/>
-                                            <constructor-arg value="id"/>
-                                        </bean>
-                                    </list>
-                                </property>
-
-                                <property name="valueFields">
-                                    <list>
-                                        <bean class="org.apache.ignite.cache.store.jdbc.JdbcTypeField">
-                                            <constructor-arg>
-                                                <util:constant static-field="java.sql.Types.INTEGER"/>
-                                            </constructor-arg>
-                                            <constructor-arg value="id"/>
-                                            <constructor-arg value="int"/>
-                                            <constructor-arg value="id"/>
-                                        </bean>
-
-                                        <bean class="org.apache.ignite.cache.store.jdbc.JdbcTypeField">
-                                            <constructor-arg>
-                                                <util:constant static-field="java.sql.Types.VARCHAR"/>
-                                            </constructor-arg>
-                                            <constructor-arg value="name"/>
-                                            <constructor-arg value="java.lang.String"/>
-                                            <constructor-arg value="name"/>
-                                        </bean>
-                                    </list>
-                                </property>
-                            </bean>
-                        </list>
-                    </property>
                 </bean>
             </property>
+            <property name="dialect">
+                <bean class="org.apache.ignite.cache.store.jdbc.dialect.H2Dialect"/>
+            </property>
 
-            <property name="readThrough" value="true"/>
-            <property name="writeThrough" value="true"/>
+            <property name="types">
+                <list>
+                    <bean class="org.apache.ignite.cache.store.jdbc.JdbcType">
+                        <property name="cacheName" value="person"/>
+                        <property name="keyType" value="java.lang.Integer"/>
+                        <property name="valueType"
+                                  value="org.gridgain.cache.store.factories.system.Person"/>
+                        <property name="databaseSchema" value=""/>
+                        <property name="databaseTable" value="person"/>
+
+                        <property name="keyFields">
+                            <list>
+                                <bean class="org.apache.ignite.cache.store.jdbc.JdbcTypeField">
+                                    <constructor-arg>
+                                        <util:constant static-field="java.sql.Types.INTEGER"/>
+                                    </constructor-arg>
+                                    <constructor-arg value="id"/>
+                                    <constructor-arg value="int"/>
+                                    <constructor-arg value="id"/>
+                                </bean>
+                            </list>
+                        </property>
+
+                        <property name="valueFields">
+                            <list>
+                                <bean class="org.apache.ignite.cache.store.jdbc.JdbcTypeField">
+                                    <constructor-arg>
+                                        <util:constant static-field="java.sql.Types.INTEGER"/>
+                                    </constructor-arg>
+                                    <constructor-arg value="id"/>
+                                    <constructor-arg value="int"/>
+                                    <constructor-arg value="id"/>
+                                </bean>
+
+                                <bean class="org.apache.ignite.cache.store.jdbc.JdbcTypeField">
+                                    <constructor-arg>
+                                        <util:constant static-field="java.sql.Types.VARCHAR"/>
+                                    </constructor-arg>
+                                    <constructor-arg value="name"/>
+                                    <constructor-arg value="java.lang.String"/>
+                                    <constructor-arg value="name"/>
+                                </bean>
+                            </list>
+                        </property>
+                    </bean>
+                </list>
+            </property>
         </bean>
-    </list>
-</property>
+    </property>
+
+    <property name="readThrough" value="true"/>
+    <property name="writeThrough" value="true"/>
+</bean>
 ``` 
 
 ## INSTALLATION
