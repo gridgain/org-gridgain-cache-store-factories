@@ -28,13 +28,17 @@
                     <property name="atomicityMode" value="ATOMIC"/>
 
                     <property name="cacheStoreFactory">
-                        <bean class="org.gridgain.cache.store.factories.JdbcCacheStoreFactory">
-                            <property name="url" value="jdbc:h2:tcp://localhost:19092/./out/test"/>
-                            <property name="properties">
-                                <util:map>
-                                    <entry key="user" value="sa"/>
-                                    <entry key="password" value=""/>
-                                </util:map>
+                        <bean class="org.apache.ignite.cache.store.jdbc.CacheJdbcPojoStoreFactory">
+                            <property name="dataSourceFactory">
+                                <bean class="org.gridgain.cache.store.factories.JdbcDataSourceFactory">
+                                    <property name="url" value="jdbc:h2:tcp://localhost:19092/./out/test"/>
+                                    <property name="properties">
+                                        <util:map>
+                                            <entry key="user" value="sa"/>
+                                            <entry key="password" value=""/>
+                                        </util:map>
+                                    </property>
+                                </bean>
                             </property>
                             <property name="dialect">
                                 <bean class="org.apache.ignite.cache.store.jdbc.dialect.H2Dialect"/>
